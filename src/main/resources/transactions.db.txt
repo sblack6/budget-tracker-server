@@ -1,0 +1,26 @@
+monthly_transactions
+(
+id BIGINT NOT NULL,
+month VARCHAR,
+rent NUMERIC,
+groceries NUMERIC,
+travel NUMERIC,
+restaurants NUMERIC,
+loans NUMERIC,
+clothing NUMERIC,
+general_merchandise NUMERIC,
+home_improvement NUMERIC,
+hobbies NUMERIC,
+personal_care NUMERIC,
+cable NUMERIC,
+entertainment NUMERIC,
+gifts NUMERIC,
+utilities NUMERIC,
+atm NUMERIC,
+gasoline NUMERIC,
+healthcare NUMERIC,
+subscriptions NUMERIC,
+electronics NUMERIC,
+insurance NUMERIC,
+miscellaneous NUMERIC
+)
