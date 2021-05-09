@@ -15,6 +15,7 @@ public class FileUploadService {
 
     static final String PERSONAL_CAPITAL_SOURCE = "personal-capital";
     static final String SOURCE_ERROR_MSG = "Source must be 'personal-capital'.  This endpoint currently only supports parsing csv files exported from personal capital";
+    static final String FILE_PARSE_EXCEPTION = "Unable to parse file.";
 
     @Autowired
     private TransactionsReader personalCapitalTransactionsReader;
@@ -31,7 +32,7 @@ public class FileUploadService {
         try {
             return new InputStreamReader(file.getInputStream());
         } catch (IOException e) {
-            throw new BudgetTrackerException("Unable to parse file.", e);
+            throw new BudgetTrackerException(FILE_PARSE_EXCEPTION, e);
         }
 
     }
