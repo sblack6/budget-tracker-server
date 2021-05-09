@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonalCapitalTransaction {
+public class Transaction {
     private String category;
     private float amount;
 }

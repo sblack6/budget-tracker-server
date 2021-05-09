@@ -1,4 +1,4 @@
-package com.sblack.budgettracker.util;
+package com.sblack.budgettracker.reader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -12,13 +12,15 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sblack.budgettracker.exception.BudgetTrackerException;
 import com.sblack.budgettracker.model.MonthlySpending;
-import com.sblack.budgettracker.model.PersonalCapitalTransaction;
+import com.sblack.budgettracker.model.Transaction;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class PersonalCapitalCsvReader {
+@Component("personalCapitalTransactionsReader")
+public class PersonalCapitalCsvReader implements TransactionsReader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonalCapitalCsvReader.class);
 
@@ -27,14 +29,15 @@ public class PersonalCapitalCsvReader {
     private static final String DATE = HEADERS[0];
     private static final String CATEGORY = HEADERS[3];
 
-    public static MonthlySpending csvToMonthlyTransactions(Reader fileReader) throws BudgetTrackerException {
+    @Override
+    public MonthlySpending readTransactions(Reader fileReader) throws BudgetTrackerException {
         try {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT
                     .withHeader(HEADERS)
                     .withFirstRecordAsHeader()
                     .parse(fileReader);
 
-            List<PersonalCapitalTransaction> transactions = new ArrayList<>();
+            List<Transaction> transactions = new ArrayList<>();
             YearMonth date = YearMonth.of(0,1);
             YearMonth compareDate = YearMonth.of(0,1);
             for (CSVRecord record : records) {
@@ -42,7 +45,7 @@ public class PersonalCapitalCsvReader {
                     date = getDate(record.get(DATE));
                 }
 
-                PersonalCapitalTransaction transaction = PersonalCapitalTransaction.builder()
+                Transaction transaction = Transaction.builder()
                         .category(sanitizeCategoryName(record.get(CATEGORY)))
                         .amount(Float.parseFloat(record.get(AMOUNT)))
                         .build();
@@ -63,10 +66,10 @@ public class PersonalCapitalCsvReader {
         return YearMonth.of(parsedDate.getYear(), parsedDate.getMonth());
     }
 
-    private static MonthlySpending summarizeTransactions(List<PersonalCapitalTransaction> transactions) {
+    private static MonthlySpending summarizeTransactions(List<Transaction> transactions) {
         Map<String, Float> transactionSummary = transactions.stream().collect(Collectors.toMap(
-                PersonalCapitalTransaction::getCategory,
-                PersonalCapitalTransaction::getAmount,
+                Transaction::getCategory,
+                Transaction::getAmount,
                 (entry1, entry2) -> {
                     return entry1 + entry2;
         }));

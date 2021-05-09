@@ -22,9 +22,6 @@ public class MonthlyTransactionsController {
     @Autowired
     private FileUploadService fileUploadService;
 
-    private static final String PERSONAL_CAPITAL_SOURCE = "personal-capital";
-    private static final String SOURCE_ERROR_MSG = "Source must be 'personal-capital'.  This endpoint currently only supports parsing csv files exported from personal capital";
-
     @GetMapping
     public List<MonthlySpending> list() {
         return transactionsRepo.findAll();
@@ -54,11 +51,8 @@ public class MonthlyTransactionsController {
                                            @RequestParam("file") MultipartFile file,
                                            @RequestParam("type") String type,
                                            @RequestParam("inProgress") boolean inProgress) {
-        if (!PERSONAL_CAPITAL_SOURCE.equals(source)) {
-            return new ResponseEntity<>(SOURCE_ERROR_MSG, HttpStatus.BAD_REQUEST);
-        }
         try {
-            MonthlySpending monthlySpending = fileUploadService.parseCsv(file);
+            MonthlySpending monthlySpending = fileUploadService.parseCsv(file, source);
             monthlySpending.setType(BudgetType.valueOf(type));
             monthlySpending.setInProgress(inProgress);
             transactionsRepo.save(monthlySpending);

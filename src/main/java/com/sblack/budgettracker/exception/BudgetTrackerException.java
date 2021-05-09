@@ -6,4 +6,8 @@ public class BudgetTrackerException extends Exception {
     public BudgetTrackerException(String s, Exception e) {
         super(s, e);
     }
+
+    public BudgetTrackerException(String s) {
+        super(s);
+    }
 }
