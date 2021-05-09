@@ -19,7 +19,7 @@ public class FileUploadService {
     @Autowired
     private TransactionsReader personalCapitalTransactionsReader;
 
-    public MonthlySpending parseCsv(MultipartFile file, String source) throws BudgetTrackerException {
+    public MonthlySpending readTransactions(MultipartFile file, String source) throws BudgetTrackerException {
         if (PERSONAL_CAPITAL_SOURCE.equals(source)) {
             return personalCapitalTransactionsReader.readTransactions(this.getFileReader(file));
         } else {

@@ -52,7 +52,7 @@ public class MonthlyTransactionsController {
                                            @RequestParam("type") String type,
                                            @RequestParam("inProgress") boolean inProgress) {
         try {
-            MonthlySpending monthlySpending = fileUploadService.parseCsv(file, source);
+            MonthlySpending monthlySpending = fileUploadService.readTransactions(file, source);
             monthlySpending.setType(BudgetType.valueOf(type));
             monthlySpending.setInProgress(inProgress);
             transactionsRepo.save(monthlySpending);
