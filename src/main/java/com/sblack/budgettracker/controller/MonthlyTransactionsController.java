@@ -34,6 +34,7 @@ public class MonthlyTransactionsController {
         transactionsRepo.save(transactions);
     }
 
+    // Delete
     @PostMapping("/total")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> calculateTotals() {
@@ -55,6 +56,7 @@ public class MonthlyTransactionsController {
             MonthlySpending monthlySpending = fileUploadService.readTransactions(file, source);
             monthlySpending.setType(BudgetType.valueOf(type));
             monthlySpending.setInProgress(inProgress);
+            monthlySpending.setDefault(false);
             transactionsRepo.save(monthlySpending);
         } catch (BudgetTrackerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -67,6 +69,7 @@ public class MonthlyTransactionsController {
         return transactionsRepo.getOne(id);
     }
 
+    // Delete
     @PutMapping("/modify/{id}")
     public ResponseEntity<String> modify(@PathVariable long id, @RequestParam(required = false) Float rent) {
         MonthlySpending fromDB = transactionsRepo.getOne(id);

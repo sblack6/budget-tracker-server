@@ -24,6 +24,7 @@ public class MonthlySpending {
 
     private BudgetType type;
     private YearMonth date;
+    private boolean isDefault;
     private boolean inProgress;
     private float rent;
     private float groceries;
