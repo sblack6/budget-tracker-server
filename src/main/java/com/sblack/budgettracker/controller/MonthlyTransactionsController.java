@@ -143,12 +143,21 @@ public class MonthlyTransactionsController {
     // Search API
     @GetMapping("/search/{type}/{date}")
     public List<MonthlySpending> searchForMonthlyTransactions(@PathVariable String type, @PathVariable String date) {
+        ExampleMatcher ignoreInProgressMatcher = ExampleMatcher.matchingAll()
+                .withIgnorePaths("inProgress");
         MonthlySpending searchExample = MonthlySpending.builder()
                 .date(YearMonth.parse(date))
                 .type(BudgetType.valueOf(type.toUpperCase()))
                 .isDefault(false)
                 .build();
-        return transactionsRepo.findAll(Example.of(searchExample));
+        return transactionsRepo.findAll(Example.of(searchExample, ignoreInProgressMatcher));
+    }
+
+    @DeleteMapping("/delete-if-exists/{type}/{date}")
+    public ResponseEntity deleteIfExists(@PathVariable String type, @PathVariable String date) {
+        List<MonthlySpending> entriesToDelete = this.searchForMonthlyTransactions(type, date);
+        transactionsRepo.deleteAll(entriesToDelete);
+        return ResponseEntity.status(HttpStatus.OK).body(entriesToDelete);
     }
 }
 
