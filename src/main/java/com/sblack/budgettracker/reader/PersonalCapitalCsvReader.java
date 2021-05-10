@@ -85,7 +85,7 @@ public class PersonalCapitalCsvReader implements TransactionsReader {
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.convertValue(transactionSummary, MonthlySpending.class).calculateTotal();
+        return objectMapper.convertValue(transactionSummary, MonthlySpending.class).setNullsToZero().calculateTotal();
     }
 
     private static String sanitizeCategoryName(String categoryName) {
