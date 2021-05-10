@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.xml.ws.Response;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -49,52 +50,52 @@ public class MonthlyTransactionsController {
     }
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody MonthlySpending transactions) {
+    public ResponseEntity create(@RequestBody MonthlySpending transactions) {
         if (transactions.isDefault()) {
-            return new ResponseEntity<>(DEFAULT_ERROR_MSG, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(DEFAULT_ERROR_MSG);
         }
         transactions.calculateTotal();
         transactionsRepo.save(transactions);
-        return new ResponseEntity<>(SUCCESS, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(SUCCESS);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> update(@PathVariable long id, @RequestBody MonthlySpending monthlySpending) {
+    public ResponseEntity update(@PathVariable long id, @RequestBody MonthlySpending monthlySpending) {
         if (monthlySpending.isDefault()) {
-            return new ResponseEntity<>(DEFAULT_ERROR_MSG, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(DEFAULT_ERROR_MSG);
         }
         monthlySpending.setId(id);
         transactionsRepo.save(monthlySpending);
-        return new ResponseEntity<>(SUCCESS, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(SUCCESS);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id) {
+    public ResponseEntity delete(@PathVariable long id) {
         transactionsRepo.deleteById(id);
-        return new ResponseEntity<>(SUCCESS, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(SUCCESS);
     }
 
     @PostMapping("/upload-transactions")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> uploadTransactions(@RequestParam String source,
-                                           @RequestParam("file") MultipartFile file,
+    public ResponseEntity uploadTransactions(@RequestParam String source,
+                                           @RequestBody MultipartFile file,
                                            @RequestParam("type") String type,
                                            @RequestParam("inProgress") boolean inProgress) {
+        MonthlySpending monthlySpending;
         try {
-            MonthlySpending monthlySpending = fileUploadService.readTransactions(file, source);
+            monthlySpending = fileUploadService.readTransactions(file, source);
             monthlySpending.setType(BudgetType.valueOf(type.toUpperCase()));
             monthlySpending.setInProgress(inProgress);
             monthlySpending.setDefault(false);
             transactionsRepo.save(monthlySpending);
         } catch (BudgetTrackerException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        return new ResponseEntity<>("Success", HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.OK).body(monthlySpending);
     }
 
     @PostMapping("/default-budget")
     @ResponseStatus(HttpStatus.OK)
-    public void createDefaultBudget(@RequestBody MonthlySpending transactions) {
+    public ResponseEntity createDefaultBudget(@RequestBody MonthlySpending transactions) {
         // Delete any existing entries.
         MonthlySpending defaultBudgetExample = MonthlySpending.builder()
                 .isDefault(true)
@@ -110,6 +111,7 @@ public class MonthlyTransactionsController {
         transactions.setType(BudgetType.BUDGET);
         transactions.setDate(DEFAULT_DATE);
         transactionsRepo.save(transactions);
+        return ResponseEntity.status(HttpStatus.OK).body(transactions);
     }
 
     @GetMapping("/default-budget")
@@ -126,7 +128,7 @@ public class MonthlyTransactionsController {
 
     // date of format yyyy-mm
     @PostMapping("/default-budget/{date}")
-    public void newBudgetFromDefault(@PathVariable String date, @RequestParam boolean inProgress) {
+    public ResponseEntity newBudgetFromDefault(@PathVariable String date, @RequestParam boolean inProgress) {
         YearMonth parsedDate = YearMonth.parse(date);
         MonthlySpending defaultBudget = this.getDefaultBudget();
         MonthlySpending newBudgetFromDefault = defaultBudget.withId(null);
@@ -135,6 +137,7 @@ public class MonthlyTransactionsController {
         newBudgetFromDefault.setDate(parsedDate);
         newBudgetFromDefault.setId(null);
         transactionsRepo.save(newBudgetFromDefault);
+        return ResponseEntity.status(HttpStatus.OK).body(newBudgetFromDefault);
     }
 
     // Search API
