@@ -143,12 +143,12 @@ public class MonthlyTransactionsController {
     // Search API
     @GetMapping("/search/{type}/{date}")
     public List<MonthlySpending> searchForMonthlyTransactions(@PathVariable String type, @PathVariable String date) {
-        MonthlySpending defaultBudgetExample = MonthlySpending.builder()
+        MonthlySpending searchExample = MonthlySpending.builder()
                 .date(YearMonth.parse(date))
                 .type(BudgetType.valueOf(type.toUpperCase()))
                 .isDefault(false)
                 .build();
-        return transactionsRepo.findAll(Example.of(defaultBudgetExample));
+        return transactionsRepo.findAll(Example.of(searchExample));
     }
 }
 
