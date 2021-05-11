@@ -5,6 +5,7 @@ import com.sblack.budgettracker.model.BudgetType;
 import com.sblack.budgettracker.model.MonthlySpending;
 import com.sblack.budgettracker.repositories.MonthlyTransactionsRepository;
 import com.sblack.budgettracker.services.FileUploadService;
+import com.sblack.budgettracker.util.MonthlySpendingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.ws.Response;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -65,8 +67,20 @@ public class MonthlyTransactionsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(DEFAULT_ERROR_MSG);
         }
         monthlySpending.setId(id);
+        monthlySpending.calculateTotal();
         transactionsRepo.save(monthlySpending);
         return ResponseEntity.status(HttpStatus.OK).body(SUCCESS);
+    }
+
+    @PutMapping("/merge/{type}/{date}")
+    public ResponseEntity merge(@PathVariable String type, @PathVariable String date, @RequestBody MonthlySpending spendingToMerge) {
+        if (spendingToMerge.isDefault()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(DEFAULT_ERROR_MSG);
+        }
+        MonthlySpending base = this.searchForMonthlyTransactions(type, date).get(0);
+        MonthlySpending merged = MonthlySpendingUtil.merge(base, spendingToMerge);
+        transactionsRepo.save(merged);
+        return ResponseEntity.status(HttpStatus.OK).body(merged);
     }
 
     @DeleteMapping("/{id}")
