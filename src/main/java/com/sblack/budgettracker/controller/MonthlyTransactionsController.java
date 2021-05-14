@@ -124,6 +124,7 @@ public class MonthlyTransactionsController {
         transactions.setDefault(true);
         transactions.setType(BudgetType.BUDGET);
         transactions.setDate(DEFAULT_DATE);
+        transactions.setInProgress(false);
         transactionsRepo.save(transactions);
         return ResponseEntity.status(HttpStatus.OK).body(transactions);
     }
