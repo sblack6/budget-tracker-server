@@ -69,7 +69,7 @@ public class MonthlyTransactionsController {
         monthlySpending.setId(id);
         monthlySpending.calculateTotal();
         transactionsRepo.save(monthlySpending);
-        return ResponseEntity.status(HttpStatus.OK).body(SUCCESS);
+        return ResponseEntity.status(HttpStatus.OK).body(monthlySpending);
     }
 
     @PutMapping("/merge/{type}/{date}")
