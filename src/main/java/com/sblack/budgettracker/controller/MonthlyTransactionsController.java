@@ -14,9 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.xml.ws.Response;
-import java.time.Month;
 import java.time.YearMonth;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public class MonthlyTransactionsController {
 
     private static final YearMonth DEFAULT_DATE = YearMonth.of(0, 1);
     private static final String SUCCESS = "Success";
-    private static final String DEFAULT_ERROR_MSG = "User cannot add items with 'isDefault=true'.  Please use the Post /default API.";
+    private static final String DEFAULT_ERROR_MSG = "User cannot add items with 'isDefault=true'.  Please use the Post /default-budget API.";
 
     @Autowired
     private MonthlyTransactionsRepository transactionsRepo;
@@ -110,16 +109,7 @@ public class MonthlyTransactionsController {
     @PostMapping("/default-budget")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity createDefaultBudget(@RequestBody MonthlySpending transactions) {
-        // Delete any existing entries.
-        MonthlySpending defaultBudgetExample = MonthlySpending.builder()
-                .isDefault(true)
-                .date(DEFAULT_DATE)
-                .build();
-        List<MonthlySpending> results = transactionsRepo.findAll(Example.of(defaultBudgetExample));
-        for (MonthlySpending result: results) {
-            transactionsRepo.deleteById(result.getId());
-        }
-
+        transactions.setId(null);
         transactions.calculateTotal();
         transactions.setDefault(true);
         transactions.setType(BudgetType.BUDGET);
@@ -137,7 +127,8 @@ public class MonthlyTransactionsController {
                 .date(DEFAULT_DATE)
                 .type(BudgetType.BUDGET)
                 .build();
-        Optional<MonthlySpending> result = transactionsRepo.findOne(Example.of(defaultBudgetExample, matcher));
+        List<MonthlySpending> results = transactionsRepo.findAll(Example.of(defaultBudgetExample, matcher));
+        Optional<MonthlySpending> result = results.stream().max(Comparator.comparing(MonthlySpending::getId));
         return result.isPresent() ? result.get() : null;
     }
 
